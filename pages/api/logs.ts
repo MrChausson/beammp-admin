@@ -5,7 +5,7 @@ import { getSedFilterString } from '@utils/configUtils'
 import { getLogger } from '@utils/loggerUtils'
 import { getSSHClient } from '@utils/sshUtils'
 
-import usersConfig from '@config/usersConfig.json'
+const admins = process.env.ADMIN_EMAILS!.split(',');
 
 const logger = getLogger('logs.ts')
 
@@ -18,7 +18,7 @@ export default async function handler(
 
     if (!session) return res.status(401).json({error: 'Unauthorized'})
 
-    if (!session.user?.email || !usersConfig.admins.includes(session.user?.email)) return res.status(403).json({error: 'Forbidden'})
+    if (!session.user?.email || !admins.includes(session.user?.email)) return res.status(403).json({error: 'Forbidden'})
 
     const sshClient = await getSSHClient()
   
