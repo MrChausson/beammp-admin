@@ -4,19 +4,21 @@ import getDBClient from './dbUtils'
 import UserList, { MergeType } from '@classes/UserList'
 import User from '@classes/User'
 
+const beammp_server_dir = process.env.BEAMMP_SERVER_DIR
+
 export type ExtractReport = Record<string,MergeType>
 
 async function extractUsersToDb(): Promise<ExtractReport> {
     const ssh = await getSSHClient()
     const supabase = getDBClient()
     const res: ExtractReport = {}
-    const response = await ssh.execCommand('ls logs/')
+    const response = await ssh.execCommand(`ls ${beammp_server_dir}/logs/`)
 
     const files: string[] = response.stdout.split('\n')
     const insertedFiles: string[] = (await supabase.from<definitions['logfiles']>('logfiles').select('filename')).data?.map(d => d.filename) ?? []
     
     for (const file of files.filter(f => !insertedFiles.includes(f))) {
-        const {stdout: logs} = await ssh.execCommand('cat logs/'+file)
+        const {stdout: logs} = await ssh.execCommand(`cat ${beammp_server_dir}/logs/${file}`)
 
         const users = (await supabase.from<definitions['user']>('user').select('*')).data?.map(user => new User({
             username: user.username,

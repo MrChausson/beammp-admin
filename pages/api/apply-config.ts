@@ -13,10 +13,11 @@ export default async function handler(
 ) {
   try {
 
-    const { file, config }: { file: string, config: string } = req.body
+    const { config }: { config: string } = req.body
+    const file = '/home/beam/server/ServerConfig.toml'
 
     const sshClient = await getSSHClient()
-    const response = await sshClient.execCommand(`echo '${config}'> beammp-server/${file}`)
+    const response = await sshClient.execCommand(`echo '${config}'> ${file}`)
     logger.info({response}, 'get config')
     res.status(200).json(response)
   } catch (error) {

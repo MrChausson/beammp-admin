@@ -3,6 +3,7 @@ import { SSHExecCommandResponse } from 'node-ssh'
 import { getLogger } from '@utils/loggerUtils'
 import { getSSHClient } from '@utils/sshUtils'
 
+const beammp_server_dir = process.env.BEAMMP_SERVER_DIR
 
 
 const logger = getLogger('download-resource/[folder].ts')
@@ -17,7 +18,7 @@ export default async function handler(
     const { folder } = req.query
     const { url } = req.body
   
-    const response = await sshClient.execCommand(`cd beammp-server/${folder}/Client; wget ${url}`)
+    const response = await sshClient.execCommand(`cd ${beammp_server_dir}/${folder}/Client; wget ${url}`)
 
     logger.info({response, folder}, 'download resource')
   

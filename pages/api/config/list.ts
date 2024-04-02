@@ -11,39 +11,34 @@ export type ConfigList = {
     current: string | null
 }
 
+const beammp_server_dir = process.env.BEAMMP_SERVER_DIR
+
 export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse<ConfigList|{error: any}>
 ) {
     try {
-        const sshClient = await getSSHClient()
-      
-        const response = await sshClient.execCommand('cd beammp-server; ls ServerConfig*')
-    
-        logger.info({response}, 'get config files')
-    
-        const files = response.stdout.split('\n').filter(f => f !== 'ServerConfig.toml')
-    
-        const { stdout: mainConfStr } = await sshClient.execCommand('cat beammp-server/ServerConfig.toml')
-        const mainConfig = new ServerConfig(mainConfStr)
-    
-        let current = null
-    
+        const sshClient = await getSSHClient();
+        const files = [`${beammp_server_dir}`];
+        const { stdout: mainConfStr } = await sshClient.execCommand('cat ' + files[0]);
+        const mainConfig = new ServerConfig(mainConfStr);
+        let current = null;
+
         for (const configFile of files) {
-            const { stdout: configString } = await sshClient.execCommand('cd beammp-server; cat '+configFile)
-            const config = new ServerConfig(configString)
+            const { stdout: configString } = await sshClient.execCommand('cat ' + configFile);
+            const config = new ServerConfig(configString);
             if (config.equals(mainConfig)) {
-                current = configFile
-                break
+                current = configFile;
+                break;
             }
         }
-      
+
         res.status(200).json({
             files,
             current
-        })
+        });
     } catch (error) {
-        logger.error(error)
-        res.status(500).json({error})
+        logger.error(error);
+        res.status(500).json({error});
     }
 }

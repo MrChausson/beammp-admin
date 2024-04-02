@@ -41,19 +41,12 @@ const ConfigPage: NextPage = () => {
         }
     }
 
-    const getFilenameFromMapPath = (mapPath: string): string => {
-        const matches = mapPath.match(/^\/[^/]+\/([^/]+)\//)
-        const middleName = matches && matches[1] ? matches[1].split('_').map(m => _.capitalize(m)).join('') : 'New'
-        return `ServerConfig${middleName}.toml`
-    }
-
     const [success, setSuccess] = useState<string>()
 
     const applyConfig = async () => {
         setSuccess(undefined)
         const configToSave = {
             config: config.toTOML(),
-            file: getFilenameFromMapPath(config.configObject().Map as string)
         }
         const response = await fetcher('/api/apply-config', {
             method: 'POST',
@@ -65,7 +58,7 @@ const ConfigPage: NextPage = () => {
         })
         console.log(response)
         if (!response.stderr) {
-            setSuccess(`Config saved on the server as ${getFilenameFromMapPath(config.configObject().Map as string)}.`)
+            setSuccess(`Config saved on the server`)
         }
     }
 
@@ -100,7 +93,7 @@ const ConfigPage: NextPage = () => {
         <br/>
         {warning && <Alert variant="warning"><IconAlertTriangle/> Config has been modified on the server. <Alert.Link onClick={reloadConfig}>Reload</Alert.Link> config from server?</Alert>}
         {success && <Alert variant="success"><IconDeviceFloppy/> {success}</Alert>}
-        <span>Config file will be saved as: {config.configObject().Map ? getFilenameFromMapPath(config.configObject().Map as string) : `ServerConfigNew.toml`}</span>
+        <span>Config file will be saved as: `ServerConfigNew.toml`</span>
         <Form as={Card} body>
             {Object.keys(config.configObject()).map(confItem => {
                 const configValue = config.configObject()[confItem];
@@ -118,8 +111,6 @@ const ConfigPage: NextPage = () => {
                 </InputGroup>
             })}
             <InputGroup className="mt-2">
-                <Button variant="warning" disabled>Restore config</Button>
-                <Button variant="secondary" onClick={saveConfig}>Save to DB</Button>
                 <Button variant="success" onClick={applyConfig}>Apply config</Button>{' '}
             </InputGroup>
         </Form>

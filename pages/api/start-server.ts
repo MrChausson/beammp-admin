@@ -30,8 +30,6 @@ export default async function handler(
   } catch (error) {
     logger.error(error)
   } finally {
-    // pgrep BeamMP
-    // kill -2 $(pgrep BeamMP)
   
     res.status(200).json(response)
   }

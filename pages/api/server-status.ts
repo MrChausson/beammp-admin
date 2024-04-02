@@ -14,9 +14,11 @@ export default async function handler(
   try {
     const sshClient = await getSSHClient()
   
-    const response = await sshClient.execCommand('pgrep BeamMP')
+    const response = await sshClient.execCommand('systemctl is-active beammp')
 
-    logger.info({response}, 'get server PID')
+    const isActive = response.stdout.trim();
+
+    logger.info({isActive}, 'get server status')
   
     res.status(200).json(response)
   } catch (error) {

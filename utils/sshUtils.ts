@@ -3,6 +3,8 @@ import { NodeSSH, SSHExecCommandResponse } from 'node-ssh'
 
 let sshClient: NodeSSH | null = null
 
+const { HOST, USERNAME, PRIVATE_KEY } = process.env
+
 export async function getSSHClient(): Promise<NodeSSH> {
     if (!sshClient) {
         const ssh = new NodeSSH()
@@ -10,8 +12,9 @@ export async function getSSHClient(): Promise<NodeSSH> {
         sshClient = await ssh.connect({
             host: HOST,
             username: USERNAME,
-            privateKey: PRIVATE_KEY
+            privateKeyPath: PRIVATE_KEY
         })
+        console.log(sshClient);
     }
 
     return sshClient

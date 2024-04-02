@@ -13,7 +13,7 @@ export default async function handler(
 ) {
   try {
     const sshClient = await getSSHClient()
-    const response = await sshClient.execCommand('cat beammp-server/ServerConfig.toml')
+    const response = await sshClient.execCommand('cat /home/beam/server/ServerConfig.toml')
     logger.info({response}, 'get config')
     res.status(200).json(response)
   } catch (error) {

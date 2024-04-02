@@ -15,9 +15,14 @@ export default async function handler(
     const sshClient = await getSSHClient()
   
     const response = await sshClient.execCommand('systemctl stop beammp')
-  
-    logger.info({response}, 'server stopped')
 
+    // if it was not successful, tell the user
+    if (response.code !== 0) {
+      logger.error({response}, 'server stop failed')
+      return res.status(500).json(response)
+    }
+    
+    logger.info({response}, 'server stopped')
     res.status(200).json(response)
   } catch (error) {
     logger.error(error)

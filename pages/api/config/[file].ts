@@ -7,6 +7,8 @@ import ServerConfig, { ServerConfigType } from '@classes/ServerConfig'
 
 const logger = getLogger('config.ts')
 
+const beammp_server_dir = process.env.BEAMMP_SERVER_DIR
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<ServerConfigType | {error: any}>
@@ -15,7 +17,7 @@ export default async function handler(
     const sshClient = await getSSHClient()
 
     const { file } = req.query
-    const response = await sshClient.execCommand(`cat beammp-server/${file}`)
+    const response = await sshClient.execCommand(`cat ${beammp_server_dir}/${file}`)
     logger.info({response}, 'get config')
     const configString = response.stdout
     const config = new ServerConfig(configString)

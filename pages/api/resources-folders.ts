@@ -6,6 +6,8 @@ import { getSSHClient } from '@utils/sshUtils'
 
 const logger = getLogger('resources-folders.ts')
 
+const server_dir_folder = process.env.SERVER_DIR_FOLDER;
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<string[] | {error:any}>
@@ -13,7 +15,7 @@ export default async function handler(
   try {
     const sshClient = await getSSHClient()
   
-    const response = await sshClient.execCommand(`cd beammp-server; ls -d */ | cut -f1 -d'/' | grep Resources`)
+    const response = await sshClient.execCommand(`ls -d ${server_dir_folder}/Resources | cut -f1 -d'/' | grep Resources`)
 
     logger.info({response}, 'list resources folders')
   

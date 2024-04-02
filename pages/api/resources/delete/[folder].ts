@@ -7,6 +7,8 @@ import { getSSHClient } from '@utils/sshUtils'
 
 const logger = getLogger('delete-resource/[folder].ts')
 
+const beammp_server_dir = process.env.BEAMMP_SERVER_DIR
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<SSHExecCommandResponse | {error:any}>
@@ -17,7 +19,7 @@ export default async function handler(
     const { folder } = req.query
     const { file } = req.body
   
-    const response = await sshClient.execCommand(`cd beammp-server/${folder}/Client; rm ${file}`)
+    const response = await sshClient.execCommand(`cd ${beammp_server_dir}/${folder}/Client && rm ${file}`)
 
     logger.info({response, folder, file}, 'delete resource')
   
