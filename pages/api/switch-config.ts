@@ -1,7 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next'
-import { getSession } from 'next-auth/react'
 import { SSHExecCommandResponse } from 'node-ssh'
-const admins = process.env.ADMIN_EMAILS!.split(',');
+
 import { getLogger } from '@utils/loggerUtils'
 import { getSSHClient } from '@utils/sshUtils'
 
@@ -11,10 +10,6 @@ export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse<SSHExecCommandResponse|{error: any}>
 ) {
-    const session = await getSession({ req })
-    if (!session) return res.status(401).json({error: 'Unauthorized'})
-    if (!session.user?.email || !admins.includes(session.user?.email)) return res.status(403).json({error: 'Forbidden'})
-
     const sshClient = await getSSHClient()
 
     const { selected, saveCurrent }: { selected: string, saveCurrent: boolean } = req.body
@@ -25,7 +20,7 @@ export default async function handler(
   
     const response = await sshClient.execCommand(`cp beammp-server/${selected} beammp-server/ServerConfig.toml`)
 
-    logger.info({selected, response, user: session.user.email}, 'switch config')
+    logger.info({selected, response}, 'switch config')
   
     res.status(200).json(response)
 }

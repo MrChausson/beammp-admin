@@ -146,8 +146,7 @@ const AdminPage = () => {
               <UserListDisplay userList={userList}/>
             </Accordion.Body>
           </Accordion.Item>
-          {(configList && configList.files.length > 0) && <Accordion.Item eventKey="3">
-            <Accordion.Header>Switch config</Accordion.Header>
+          {(configList && configList.files && configList.files.length > 0) && <Accordion.Item eventKey="3">            <Accordion.Header>Switch config</Accordion.Header>
             <Accordion.Body>
               <div>Selected conf file: {configList.current ?? 'new config'}</div>
               <Form.Select disabled={serverState !== 'stopped'} value={selectedConfigFile} onChange={e => setSelectedConfigFile(e.target.value)}>

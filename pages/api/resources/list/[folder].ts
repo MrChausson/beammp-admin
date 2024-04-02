@@ -1,6 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next'
-import { getSession } from 'next-auth/react'
-const admins = process.env.ADMIN_EMAILS!.split(',');
+
 import { getLogger } from '@utils/loggerUtils'
 import { getSSHClient } from '@utils/sshUtils'
 
@@ -16,17 +15,13 @@ export default async function handler(
     res: NextApiResponse<ResourceItem[]|{error: any}>
 ) {
     try {
-        const session = await getSession({ req })
-        if (!session) return res.status(401).json({error: 'Unauthorized'})
-        if (!session.user?.email || !admins.includes(session.user?.email)) return res.status(403).json({error: 'Forbidden'})
-
         const { folder } = req.query
 
         const sshClient = await getSSHClient()
         
         const response = await sshClient.execCommand(`cd beammp-server/${folder}/Client; for FILE in \`ls -S\`; do du -sh $FILE ; done`)
 
-        logger.info({response, folder, user: session.user.email}, 'list resources')
+        logger.info({response, folder}, 'list resources')
         
         if (response.stderr) return res.status(500).json({error: response.stderr})
         

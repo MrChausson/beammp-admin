@@ -1,9 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { getSession } from 'next-auth/react'
 import extractUsersToDb, { ExtractReport } from '@utils/extractUsersToDb'
 import { getLogger } from '@utils/loggerUtils'
 
-const admins = process.env.ADMIN_EMAILS!.split(',');
+
 
 const logger = getLogger('import-users.ts')
 
@@ -15,9 +14,6 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<ExtractReport | ErrorReturnType>
 ) {
-  const session = await getSession({ req })
-  if (!session) return res.status(401).json({error: 'Unauthorized'})
-  if (!session.user?.email || !admins.includes(session.user?.email)) return res.status(403).json({error: 'Forbidden'})
 
   let inserted = {}
   try {
@@ -27,7 +23,7 @@ export default async function handler(
     res.status(500).json({error})
   }
 
-  logger.info({users: inserted, user: session.user.email}, 'inserted users')
+  logger.info({users: inserted}, 'inserted users')
 
   res.status(200).json(inserted)
 }

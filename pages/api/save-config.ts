@@ -1,10 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { getSession } from 'next-auth/react'
 import { saveConfigToDb } from '@utils/configUtils'
 import { definitions } from '@mytypes/supabase'
 import { getLogger } from '@utils/loggerUtils'
 
-const admins = process.env.ADMIN_EMAILS!.split(',');
+
 
 const logger = getLogger('save-config.ts')
 
@@ -13,14 +12,10 @@ export default async function handler(
   res: NextApiResponse
 ) {
   try {
-    const session = await getSession({ req })
-    if (!session) return res.status(401).json({error: 'Unauthorized'})
-    if (!session.user?.email || !admins.includes(session.user?.email)) return res.status(403).json({error: 'Forbidden'})
-
     const config: definitions['config'] = req.body
     const result = await saveConfigToDb(config)
   
-    logger.info({config, result, user: session.user.email}, 'save config')
+    logger.info({config, result}, 'save config')
 
     res.status(200).json(result)
   } catch (error) {
