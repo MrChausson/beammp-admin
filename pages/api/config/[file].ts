@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { getLogger } from '@utils/loggerUtils'
 import { getSSHClient } from '@utils/sshUtils'
 import ServerConfig, { ServerConfigType } from '@classes/ServerConfig'
+import path from 'path'
 
 
 
@@ -16,10 +17,11 @@ export default async function handler(
   try {
     const sshClient = await getSSHClient()
 
-    const { file } = req.query
-    const response = await sshClient.execCommand(`cat ${beammp_server_dir}/${file}`)
+    const { file } = req.query as { file: string };
+    const sanitizedFile = path.basename(file);
+    const response = await sshClient.exec('cat', [`${beammp_server_dir}/${sanitizedFile}`])
     logger.info({response}, 'get config')
-    const configString = response.stdout
+    const configString = response;
     const config = new ServerConfig(configString)
     res.status(200).json(config.config)
   } catch (error) {

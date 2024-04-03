@@ -9,7 +9,7 @@ const logger = getLogger('config.ts')
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<SSHExecCommandResponse | {error: any}>
+  res: NextApiResponse<String | {error: any}>
 ) {
   try {
 
@@ -17,9 +17,10 @@ export default async function handler(
     const file = '/home/beam/server/ServerConfig.toml'
 
     const sshClient = await getSSHClient()
-    const response = await sshClient.execCommand(`echo '${config}'> ${file}`)
+    // do the command but using args to avoid shell injection
+    const response = await sshClient.exec('echo', [config, '>', file])
     logger.info({response}, 'get config')
-    res.status(200).json(response)
+    res.status(200).json(response);
   } catch (error) {
     logger.error(error)
     res.status(500).json({error})

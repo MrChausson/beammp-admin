@@ -19,7 +19,7 @@ export default async function handler(
 ) {
     try {
         const sshClient = await getSSHClient();
-        const files = [`${beammp_server_dir}`];
+        const files = [`${beammp_server_dir}/ServerConfig.toml`];
         const { stdout: mainConfStr } = await sshClient.execCommand('cat ' + files[0]);
         const mainConfig = new ServerConfig(mainConfStr);
         let current = null;

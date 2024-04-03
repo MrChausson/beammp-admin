@@ -22,7 +22,6 @@ export default async function handler(
         const sshClient = await getSSHClient()
         
         const response = await sshClient.execCommand(`cd ${beammp_server_dir}/${folder}/Client && for FILE in \`ls -d -S *\`; do if [ -r "$FILE" ]; then du -sh $FILE; fi; done`)
-        logger.info({response, folder}, 'list resources')
                 
         res.status(200).json(response.stdout.split('\n').map(l => l.split('\t')).map(t => ({
             file: t[1],

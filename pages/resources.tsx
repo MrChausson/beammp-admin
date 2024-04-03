@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Container, FormControl, InputGroup, Button, Form, ListGroup, Alert, Spinner, Stack, DropdownButton, Dropdown } from 'react-bootstrap'
 import useSWR from 'swr'
 import { fetcher } from '@utils/swrUtils'
@@ -34,21 +34,19 @@ const ResourcesPage = () => {
     }, [])
 
     const [feedback, setFeedback] = useState<Feedback>()
-    const [downloading, setDownloading] = useState<boolean>(false)
+    const [uploading, setUploading] = useState<boolean>(false)
 
-    const uploadResource = async () => {
+    const uploadResource = async (file: File) => {
         setFeedback(undefined)
-        setDownloading(true)
+        setUploading(true)
         try {
-            const response = await fetcher('/api/resources/download/' + resource.folder, {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const response = await fetcher('/api/resources/upload/' + resource.folder, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                body: formData,
                 redirect: 'follow',
-                body: JSON.stringify({
-                    url: resource.url
-                })
             })
             console.log(response)
             if (response.stderr.includes('saved') || response.stdout.includes('saved')) {
@@ -75,7 +73,7 @@ const ResourcesPage = () => {
                 variant: 'danger'
             })
         } finally {
-            setDownloading(false)
+            setUploading(false)
             getResources()
         }
     }
@@ -116,35 +114,43 @@ const ResourcesPage = () => {
         }
     }
 
-    return <Container>
-        {feedback && <Alert variant={feedback.variant}>{feedback.text}</Alert>}
-        <InputGroup>
-            <FormControl placeholder="Resource URL" value={resource.url} onChange={e => setResource({
-                ...resource,
-                url: e.target.value
-            })} />
-            <Form.Select aria-label="Resources folder" style={{ maxWidth: '250px' }} value={resource.folder} onChange={e => {
-                setResource({
-                    ...resource,
-                    folder: e.target.value
-                })
-                getResources(e.target.value)
-            }}>
-                {(resourcesFolders ?? []).map(folder => <option key={folder}>{folder}</option>)}
-            </Form.Select>
-            <Button variant="outline-primary" onClick={uploadResource} disabled={downloading || !resource.url}>{downloading ? <Spinner animation="border" variant="primary" /> : 'Download'}</Button>
-        </InputGroup>
-        <ListGroup className="mt-3">
-            {(resources ?? []).map(resource => <ListGroup.Item key={resource.file}>
-                <Stack direction="horizontal" gap={2}>
-                    <DropdownButton title="Action" className="ms-auto" variant="outline-primary">
-                        <Dropdown.Item onClick={() => deleteResource(resource.file)}>Delete</Dropdown.Item>
-                        <Dropdown.Item onClick={() => setRenaming({ file: resource.file, newName: resource.file })}>Rename</Dropdown.Item>
-                    </DropdownButton>
-                </Stack>
-            </ListGroup.Item>)}
-        </ListGroup>
-    </Container>
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+            await uploadResource(e.target.files[0]);
+        }
+    };
+
+    return (
+        <Container>
+            {feedback && <Alert variant={feedback.variant}>{feedback.text}</Alert>}
+            <InputGroup>
+                <Form.Select aria-label="Resources folder" style={{ maxWidth: '250px' }} value={resource.folder} onChange={e => {
+                    setResource({
+                        ...resource,
+                        folder: e.target.value
+                    })
+                    getResources(e.target.value)
+                }}>
+                    <option value="Client">Client</option>
+                    <option value="Server">Server</option>
+                    {(resourcesFolders ?? []).map(folder => <option key={folder}>{folder}</option>)}
+                </Form.Select>
+                <Button variant="outline-primary" onClick={() => fileInputRef.current?.click()} disabled={uploading}>{uploading ? <Spinner animation="border" variant="primary" /> : 'Upload'}</Button>
+                <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileChange} />
+            </InputGroup>
+            <ListGroup className="mt-3">
+                {(resources ?? []).map(resource => <ListGroup.Item key={resource.file}>
+                    <Stack direction="horizontal" gap={2}>
+                        <DropdownButton title="Action" className="ms-auto" variant="outline-primary">
+                            <Dropdown.Item onClick={() => deleteResource(resource.file)}>Delete</Dropdown.Item>
+                        </DropdownButton>
+                    </Stack>
+                </ListGroup.Item>)}
+            </ListGroup>
+        </Container>
+    );
 }
 
 export default ResourcesPage

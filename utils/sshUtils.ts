@@ -1,4 +1,4 @@
-import { NodeSSH, SSHExecCommandResponse } from 'node-ssh'
+import { NodeSSH } from 'node-ssh'
 
 
 let sshClient: NodeSSH | null = null
